@@ -64,6 +64,36 @@ O ID do modelo no catálogo é `deepseek/deepseek-v4-flash` (também existe
 `deepseek/deepseek-v4-pro`). Para o fixar, descomenta `"model"` em
 `opencode.jsonc`.
 
+## Deep Code (VS Code + CLI)
+
+O Deep Code lê `AGENTS.md` nativamente (documentação oficial: `docs/agents-md.md`)
+e suporta MCP via `mcpServers`. O repositório já inclui
+[`.deepcode/settings.json`](../../.deepcode/settings.json) com o servidor
+`project-context`.
+
+- Config global: `~/.deepcode/settings.json` (modelo, API key, MCP).
+- Config do projeto: `<repo>/.deepcode/settings.json` (faz override, sem
+  segredos).
+- No chat, `/mcp` mostra o estado do servidor e as ferramentas, com nomes
+  `mcp__project-context__project_overview`, `…__read_doc`, etc.
+- `AGENTS.md` é o contexto estável; `.deepcode/AGENTS.md` serve apenas para
+  regras específicas do Deep Code.
+
+A API key DeepSeek fica em `~/.deepcode/settings.json` (`env.API_KEY`) e nunca
+no repositório. Se o servidor não arrancar porque o Deep Code não foi aberto na
+raiz do repo, usa um caminho absoluto:
+
+```json
+{
+  "mcpServers": {
+    "project-context": {
+      "command": "node",
+      "args": ["/caminho/absoluto/para/project-template/tools/mcp-context/server.mjs"]
+    }
+  }
+}
+```
+
 ## Claude Code / GitHub Copilot (VS Code)
 
 O ficheiro [`.mcp.json`](../../.mcp.json) na raiz usa o formato portátil
@@ -152,6 +182,24 @@ para o servidor (as extensões não têm todas o mesmo working directory):
 2. Escolhe um modelo DeepSeek (ex.: V4 Flash) nas definições do agente.
 3. Adiciona o servidor MCP `project-context` como acima.
 4. Pede ao agente para começar por `project_overview` ou `get_rules`.
+
+No **Deep Code**, a configuração do modelo fica no ficheiro global
+`~/.deepcode/settings.json`:
+
+```json
+{
+  "env": {
+    "MODEL": "deepseek-v4-flash",
+    "BASE_URL": "https://api.deepseek.com",
+    "API_KEY": "sk-..."
+  },
+  "thinkingEnabled": true,
+  "reasoningEffort": "max"
+}
+```
+
+O `.deepcode/settings.json` do repositório só contém o `mcpServers` e pode ser
+commitado; a API key nunca entra no repo.
 
 A API key não passa por este servidor e não é necessária para o MCP.
 

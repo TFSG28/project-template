@@ -38,11 +38,15 @@ Template full-stack production-ready:
   de ferramentas (`project_overview`, `get_rules`, `list_docs`, `read_doc`,
   `search_docs`), recursos `project://…` e prompts.
 - Registos incluídos: `.mcp.json` (Claude Code / Copilot portátil),
-  `.cursor/mcp.json` (Cursor) e `opencode.jsonc` (OpenCode). Para VS Code
-  nativo, Windsurf, Cline, Roo Code, Continue ou uma extensão própria, vê
-  `tools/mcp-context/README.md`.
+  `.cursor/mcp.json` (Cursor), `.deepcode/settings.json` (Deep Code) e
+  `opencode.jsonc` (OpenCode). Para VS Code nativo, Windsurf, Cline, Roo Code,
+  Continue ou uma extensão própria, vê `tools/mcp-context/README.md`.
+- **Deep Code** (CLI + extensão VS Code) lê `AGENTS.md` nativamente e usa
+  `.deepcode/settings.json`; no chat, `/mcp` mostra
+  `mcp__project-context__project_overview`, `…__get_rules`, etc.
 - **DeepSeek**: é apenas o modelo. No OpenCode está no catálogo — define
   `DEEPSEEK_API_KEY` e escolhe `deepseek/deepseek-v4-flash` (ou usa `/connect`).
+  No Deep Code, a key fica em `~/.deepcode/settings.json` (`env.API_KEY`).
   Numa extensão, a API key fica no secret storage da extensão. Nunca a commits.
 - O servidor MCP só lê a allowlist; não acede a `.env`, uploads, logs,
   `dist`, `node_modules` nem ficheiros gerados.

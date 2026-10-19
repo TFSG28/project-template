@@ -83,6 +83,9 @@ not include the `/api/v1` suffix (the client adds it).
   to it.
 - OpenCode is preconfigured in `opencode.jsonc` (loads `knowledge.md` and the
   MCP server).
+- Deep Code (CLI + VS Code) reads `AGENTS.md` and is preconfigured with the MCP
+  server in `.deepcode/settings.json`; its DeepSeek key belongs in
+  `~/.deepcode/settings.json`, never in the repo.
 - Any MCP-capable editor can use the read-only context server:
 
   ```bash
