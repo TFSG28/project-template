@@ -14,7 +14,7 @@ try {
     Write-Host "✓ Node.js version: $nodeVersion" -ForegroundColor Green
 } catch {
     Write-Host "Error: Node.js is not installed" -ForegroundColor Red
-    Write-Host "Please install Node.js 20+ from https://nodejs.org/"
+    Write-Host "Please install Node.js 24+ from https://nodejs.org/"
     exit 1
 }
 

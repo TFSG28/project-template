@@ -11,3 +11,5 @@ build/
 out/
 uploads/
 logs/
+*.tsbuildinfo
+.eslintcache

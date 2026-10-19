@@ -20,7 +20,7 @@ NC='\033[0m' # No Color
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
     echo -e "${RED}Error: Node.js is not installed${NC}"
-    echo "Please install Node.js 20+ from https://nodejs.org/"
+    echo "Please install Node.js 24+ from https://nodejs.org/"
     exit 1
 fi
 

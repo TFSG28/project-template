@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Express.js backend with Clean Architecture",
   "main": "index.js",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon",

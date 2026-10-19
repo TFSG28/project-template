@@ -143,7 +143,7 @@ npm run test:watch   # Testes em watch mode
 ## Estrutura do Projeto
 
 ```
-perfect-template/
+project-template/
 ├── backend/              # Express.js + TypeScript
 │   ├── src/
 │   │   ├── modules/      # Módulos (Clean Architecture)

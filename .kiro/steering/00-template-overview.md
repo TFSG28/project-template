@@ -9,7 +9,7 @@ Este é um template full-stack profissional baseado no projeto Lacatoni, seguind
 ## Estrutura do Projeto
 
 ```
-perfect-template/
+project-template/
 ├── backend/          # Express.js + TypeScript + Prisma
 ├── frontend/         # Next.js 16 + React 19 + Tailwind CSS 4
 └── .kiro/           # Guias de desenvolvimento e steering files

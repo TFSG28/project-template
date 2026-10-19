@@ -14,3 +14,5 @@ coverage
 .husky
 playwright-report
 test-results
+uploads
+logs

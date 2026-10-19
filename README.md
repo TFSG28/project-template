@@ -3,6 +3,10 @@
 Template production-ready com Clean Architecture: Next.js 16 + React 19 no
 frontend, Express 5 + TypeScript + Prisma 7 no backend.
 
+> **Usar como template:** clica em **Use this template** no GitHub (ou faz fork)
+> e segue o [SETUP.md](./SETUP.md). Os segredos em `.env.example` são
+> placeholders — gera os teus antes de arrancar.
+
 ## Features
 
 ### Core
@@ -172,7 +176,7 @@ Frontend (`.env.development` / `.env.production`):
 
 ## Tecnologias
 
-- Node.js 20+, Express 5, TypeScript 5, Prisma 7, MySQL 8, Pino
+- Node.js 24+, Express 5, TypeScript 5, Prisma 7, MySQL 8, Pino
 - Next.js 16, React 19, Tailwind CSS 4, React Hook Form
 - Vitest, Playwright, Docker, GitHub Actions, Husky
 
