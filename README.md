@@ -165,21 +165,34 @@ Frontend (`.env.development` / `.env.production`):
 
 ## AI agents
 
-O repositório traz contexto explícito para agentes de AI:
+O repositório traz contexto explícito para agentes de AI, estático e via MCP:
 
 - [`AGENTS.md`](./AGENTS.md) — **fonte de verdade** (regras, comandos, limites,
-  definition of done). Compatível com Codex, Cursor e agentes que leem
-  `AGENTS.md`.
+  definition of done). Lido nativamente por OpenCode, Codex, Cursor e agentes
+  que seguem o standard `AGENTS.md`.
 - [`CLAUDE.md`](./CLAUDE.md) — adapter para Claude Code (importa `AGENTS.md`).
 - [`GEMINI.md`](./GEMINI.md) — adapter para Gemini CLI.
 - [`.github/copilot-instructions.md`](./.github/copilot-instructions.md) —
   GitHub Copilot.
 - [`.cursor/rules/project.mdc`](./.cursor/rules/project.mdc) e
   [`.windsurfrules`](./.windsurfrules) — Cursor e Windsurf.
+- [`opencode.jsonc`](./opencode.jsonc) — OpenCode: `AGENTS.md` +
+  `knowledge.md` + servidor MCP.
+- [`tools/mcp-context/`](./tools/mcp-context/) — servidor **MCP read-only**
+  (stdio, zero dependências) com `project_overview`, `get_rules`,
+  `list_docs`, `read_doc`, `search_docs`, recursos `project://…` e prompts.
+  Funciona com qualquer cliente MCP: OpenCode, VS Code/Copilot, Claude Code,
+  Cursor, Windsurf, Cline, Roo Code, Continue ou uma extensão própria.
+- [`.mcp.json`](./.mcp.json) e [`.cursor/mcp.json`](./.cursor/mcp.json) —
+  registos do servidor para Claude Code/Copilot e Cursor.
 - [`.kiro/steering/`](./.kiro/steering/) — guias detalhados para o Kiro.
 - [`knowledge.md`](./knowledge.md) — convenções completas e filosofia Ponytail.
 
-Se estiveres a usar outro agente, dá-lhe `AGENTS.md` como contexto inicial.
+O modelo é independente do contexto: podes usar **DeepSeek** (no OpenCode,
+define `DEEPSEEK_API_KEY` e escolhe `deepseek/deepseek-v4-flash`; numa extensão,
+guarda a key no secret storage dela) e o servidor MCP fornece o contexto do
+projeto. Se estiveres a usar outro agente, dá-lhe `AGENTS.md` como contexto
+inicial.
 
 ## Documentação
 
@@ -191,6 +204,7 @@ Se estiveres a usar outro agente, dá-lhe `AGENTS.md` como contexto inicial.
 - [SECURITY.md](./SECURITY.md) — política de segurança
 - [docs/runbook.md](./docs/runbook.md) — operações
 - [docs/openapi.yaml](./docs/openapi.yaml) — especificação OpenAPI
+- [tools/mcp-context/README.md](./tools/mcp-context/README.md) — servidor MCP e integração com editores
 - [knowledge.md](./knowledge.md) — convenções do projeto
 
 ## Tecnologias

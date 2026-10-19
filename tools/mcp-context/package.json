@@ -1,0 +1,17 @@
+{
+  "name": "@project-template/mcp-context",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only MCP server that exposes the project's canonical docs to any MCP-capable editor or agent.",
+  "bin": {
+    "project-context-mcp": "./server.mjs"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

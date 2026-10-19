@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // O provider DeepSeek já está no catálogo do OpenCode: define
+  // DEEPSEEK_API_KEY e escolhe o modelo em /models. Para fixar:
+  // "model": "deepseek/deepseek-v4-flash",
+
+  // AGENTS.md é descoberto nativamente; aqui carregamos as convenções
+  // detalhadas. O resto do contexto fica disponível via MCP, a pedido.
+  "instructions": ["knowledge.md"],
+
+  "mcp": {
+    "servers": {
+      "project-context": {
+        "type": "local",
+        "command": ["node", "tools/mcp-context/server.mjs"],
+        "cwd": ".",
+        "codemode": false
+      }
+    }
+  }
+}

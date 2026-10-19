@@ -79,12 +79,29 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3001
 
+  quality-mcp:
+    name: MCP context server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: ".nvmrc"
+
+      # Zero dependencies: the test spawns the server and speaks JSON-RPC.
+      - name: Test MCP context server
+        working-directory: tools/mcp-context
+        run: npm test
+
   # ---------------------------------------------------------------------------
   # Deploy — only on pushes to quality/production and manual dispatch.
   # ---------------------------------------------------------------------------
   set-environment:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref_name == 'quality' || github.ref_name == 'production'))
-    needs: [quality-backend, quality-frontend]
+    needs: [quality-backend, quality-frontend, quality-mcp]
     runs-on: ubuntu-latest
     outputs:
       env_name: ${{ steps.resolve.outputs.env_name }}

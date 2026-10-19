@@ -38,11 +38,25 @@ mantendo a filosofia *Ponytail* do template (mínimo código, módulos opcionais
 ### Infra
 - `prisma generate` no início do `build` + `postbuild` copia o client gerado
   para `dist`; `prisma.config.ts` já não exige `DATABASE_URL` para gerar.
+- CI `quality-mcp` valida o servidor MCP em cada push/PR.
 - Dockerfile de produção sem Prisma CLI; `docker-compose` com variáveis
   `DATABASE_*`, segredos, volumes de uploads/logs e build arg
   `NEXT_PUBLIC_API_URL`; `output: "standalone"` no Next.
 - Restantes: `.env.example` (backend + frontend), `API.md`, `ARCHITECTURE.md`,
   `README.md`, `SETUP.md`, `DEPLOYMENT.md`, `docs/runbook.md`, `docs/openapi.yaml`.
+
+### Contexto para agentes de AI
+- `AGENTS.md` canónico (comandos, arquitetura, auth, frontend, testes,
+  definition of done) + adapters para Claude Code, Gemini CLI, Copilot, Cursor,
+  Windsurf e Kiro.
+- `opencode.jsonc` para OpenCode: `AGENTS.md` nativo, `knowledge.md` em
+  `instructions` e servidor MCP.
+- Servidor MCP read-only (`tools/mcp-context/`, stdio, zero dependências) com
+  `project_overview`, `get_rules`, `list_docs`, `read_doc`, `search_docs`,
+  recursos `project://…` e prompts. Registos em `.mcp.json` e
+  `.cursor/mcp.json`; documentação para VS Code, Windsurf, Cline/Roo Code,
+  Continue e extensões próprias (incluindo DeepSeek).
+- `.agents/` (estado local) passa a estar ignorado.
 
 ## [1.0.0] - 2026-03-26
 

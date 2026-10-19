@@ -389,3 +389,11 @@ reintroduce alternatives that were removed.
 - Frontend: `npm run build` (tests + Next build) and `npm run lint`.
 - Non-trivial logic leaves one small test behind; storage/SSE/auth already have
   theirs in the adjacent `*.spec.ts` files.
+
+### AI context
+- `AGENTS.md` is the source of truth for agents; `knowledge.md` has the full
+  conventions. Tool-specific adapters only point at them.
+- `tools/mcp-context/` is a read-only stdio MCP server for editors that prefer
+  on-demand context; it only reads the explicit doc allowlist.
+- When behavior changes, update `AGENTS.md`/`knowledge.md`/`API.md` and, if
+  needed, the MCP allowlist.

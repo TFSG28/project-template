@@ -28,6 +28,25 @@ Template full-stack production-ready:
 - **Filosofia:** Ponytail — mínimo código, nada especulativo, mudanças
   cirúrgicas. Lê `knowledge.md` antes de propor abstrações.
 
+## Contexto universal (OpenCode + MCP)
+
+- **OpenCode** lê `AGENTS.md` nativamente. [`opencode.jsonc`](./opencode.jsonc)
+  carrega `knowledge.md` em `instructions` e regista o servidor MCP.
+- [`tools/mcp-context/`](./tools/mcp-context/) é um servidor **MCP read-only**
+  (stdio, zero dependências) que expõe `AGENTS.md`, `knowledge.md`,
+  `ARCHITECTURE.md`, `API.md`, OpenAPI, setup, deploy, runbook e mais, através
+  de ferramentas (`project_overview`, `get_rules`, `list_docs`, `read_doc`,
+  `search_docs`), recursos `project://…` e prompts.
+- Registos incluídos: `.mcp.json` (Claude Code / Copilot portátil),
+  `.cursor/mcp.json` (Cursor) e `opencode.jsonc` (OpenCode). Para VS Code
+  nativo, Windsurf, Cline, Roo Code, Continue ou uma extensão própria, vê
+  `tools/mcp-context/README.md`.
+- **DeepSeek**: é apenas o modelo. No OpenCode está no catálogo — define
+  `DEEPSEEK_API_KEY` e escolhe `deepseek/deepseek-v4-flash` (ou usa `/connect`).
+  Numa extensão, a API key fica no secret storage da extensão. Nunca a commits.
+- O servidor MCP só lê a allowlist; não acede a `.env`, uploads, logs,
+  `dist`, `node_modules` nem ficheiros gerados.
+
 ## Comandos
 
 ```bash
@@ -174,6 +193,7 @@ frontend/src/
 4. Se mudaste comportamento/contrato, atualiza `API.md`, `ARCHITECTURE.md`,
    `knowledge.md` e/ou `docs/openapi.yaml`.
 5. Mudanças de env documentadas em `backend/.env.example` e `SETUP.md`.
+6. Se mexeste no servidor MCP: `cd tools/mcp-context && npm test`.
 
 ## Nunca
 
@@ -196,4 +216,5 @@ frontend/src/
 | Deploy e HTTPS | `DEPLOYMENT.md` |
 | Operação, backups, SSE atrás de proxy | `docs/runbook.md` |
 | Criar um módulo | `backend/MODULE_TEMPLATE.md` |
+| Contexto MCP / editores | `tools/mcp-context/README.md` |
 | Guias detalhados (apoio) | `.kiro/steering/` |

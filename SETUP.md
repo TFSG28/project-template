@@ -75,6 +75,23 @@ NEXT_PUBLIC_API_URL="http://localhost:3001"
 `NEXT_PUBLIC_API_URL` is inlined into the browser bundle at build time; it must
 not include the `/api/v1` suffix (the client adds it).
 
+## AI agent context
+
+- `AGENTS.md` is the source of truth (OpenCode, Codex, Cursor, etc. read it
+  natively). Tool-specific adapters (`CLAUDE.md`, `GEMINI.md`,
+  `.github/copilot-instructions.md`, `.cursor/rules/`, `.windsurfrules`) point
+  to it.
+- OpenCode is preconfigured in `opencode.jsonc` (loads `knowledge.md` and the
+  MCP server).
+- Any MCP-capable editor can use the read-only context server:
+
+  ```bash
+  node tools/mcp-context/server.mjs
+  ```
+
+  See `tools/mcp-context/README.md` for VS Code, Claude Code, Cursor,
+  Windsurf, Cline/Roo Code, Continue and custom extensions (e.g. DeepSeek).
+
 ## Creating a New Module
 
 ```
