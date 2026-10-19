@@ -27,7 +27,7 @@
     "clean-architecture"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.8.0",
