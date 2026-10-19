@@ -20,10 +20,21 @@ chmod +x setup.sh
 
 ### Backend (.env)
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
-JWT_SECRET="seu-secret-aqui"
-JWT_EXPIRES_IN="7d"
-FRONTEND_URL="http://localhost:3000"
+DATABASE_URL="mysql://user:password@localhost:3306/perfect_template"
+DATABASE_USER="user"
+DATABASE_PASSWORD="password"
+DATABASE_NAME="perfect_template"
+DATABASE_HOST="localhost"
+DATABASE_PORT=3306
+
+# openssl rand -base64 64
+JWT_SECRET="<random-secret-with-at-least-64-chars>"
+# openssl rand -hex 32
+ENCRYPTION_KEY="<random-64-hex>"
+
+FRONT_URL="http://localhost:3000"
+PORT=3001
+NODE_ENV=development
 ```
 
 ### Frontend (.env.development)

@@ -8,30 +8,73 @@ Guia para trabalhar com Prisma e banco de dados.
 
 ## Schema do Prisma
 
+O schema real está em `backend/prisma/schema.prisma` e usa **MySQL**. O client é
+gerado em `src/generated/prisma` (nunca importar `@prisma/client`).
+
 ```prisma
-// prisma/schema.prisma
 model User {
   id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(CLIENT)
-  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relações
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  workspaceId String
+
+  name     String
+  email    String  @unique
+  password String
+  isActive Boolean @default(true)
+
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@index([id])
+  @@index([email])
 }
 
-enum Role {
-  CLIENT
-  MANAGER
-  PARTNER
-  ADMIN
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique // hash bcrypt; nunca o token em claro
+  isActive     Boolean  @default(true)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime @default(now())
+  ipAddress    String?
+  userAgent    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([isActive])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model CronLock {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  owner     String?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([expiresAt])
 }
 ```
+
+Não existe `Workspace` nem `Role` no template base. Se adicionares roles ou
+multi-tenancy, é uma alteração de domínio que precisa de schema, auth e
+testes próprios — não a assumas como existente.
 
 ## Queries Eficientes
 
@@ -55,18 +98,16 @@ const user = await prisma.user.findUnique({ where: { id } });
 ### Evitar N+1 Queries
 
 ```typescript
-// ✅ BOM - Uma query com include
+// ✅ BOM - Uma query com os campos necessários
 const users = await prisma.user.findMany({
-  include: {
-    workspace: true,
-  },
+  select: { id: true, name: true, email: true },
 });
 
 // ❌ RUIM - N+1 queries
-const users = await prisma.user.findMany();
-for (const user of users) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: user.workspaceId }
+const sessions = await prisma.session.findMany();
+for (const session of sessions) {
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId }
   });
 }
 ```

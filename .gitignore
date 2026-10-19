@@ -13,3 +13,7 @@ uploads/
 logs/
 *.tsbuildinfo
 .eslintcache
+
+# Local AI-agent state (may contain secrets/history)
+.agents/
+.idea/

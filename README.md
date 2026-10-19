@@ -163,8 +163,27 @@ Frontend (`.env.development` / `.env.production`):
 | --- | --- |
 | `NEXT_PUBLIC_API_URL` | Origem do backend, sem `/api/v1`; é inlined no build |
 
+## AI agents
+
+O repositório traz contexto explícito para agentes de AI:
+
+- [`AGENTS.md`](./AGENTS.md) — **fonte de verdade** (regras, comandos, limites,
+  definition of done). Compatível com Codex, Cursor e agentes que leem
+  `AGENTS.md`.
+- [`CLAUDE.md`](./CLAUDE.md) — adapter para Claude Code (importa `AGENTS.md`).
+- [`GEMINI.md`](./GEMINI.md) — adapter para Gemini CLI.
+- [`.github/copilot-instructions.md`](./.github/copilot-instructions.md) —
+  GitHub Copilot.
+- [`.cursor/rules/project.mdc`](./.cursor/rules/project.mdc) e
+  [`.windsurfrules`](./.windsurfrules) — Cursor e Windsurf.
+- [`.kiro/steering/`](./.kiro/steering/) — guias detalhados para o Kiro.
+- [`knowledge.md`](./knowledge.md) — convenções completas e filosofia Ponytail.
+
+Se estiveres a usar outro agente, dá-lhe `AGENTS.md` como contexto inicial.
+
 ## Documentação
 
+- [AGENTS.md](./AGENTS.md) — regras operacionais para agentes de AI
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — módulos, auth, SSE, storage, design system
 - [API.md](./API.md) — endpoints, cookies, erros, limites
 - [SETUP.md](./SETUP.md) — setup detalhado

@@ -4,259 +4,119 @@ inclusion: manual
 
 # Desenvolvimento Frontend
 
-Guia para desenvolvimento de componentes e páginas no frontend Next.js.
+Guia para o frontend Next.js 16 (App Router) + React 19. A fonte de verdade é
+`AGENTS.md`; para o desenho geral, `ARCHITECTURE.md`.
 
-## Estrutura de Componentes
+## Estrutura
 
-### Componentes UI (Reutilizáveis)
-
-Localizados em `src/components/ui/`:
-- Button, Input, Modal, Select, Textarea
-- Card, Badge, Tooltip
-- Loading, ErrorMessage
-
-### Componentes de Feature
-
-Localizados em `src/components/features/`:
-- ThemeToggle, ProtectedPage
-- Componentes específicos de funcionalidades
-
-## Criando um Componente UI
-
-```tsx
-// src/components/ui/Button.tsx
-import Link from 'next/link';
-
-interface ButtonProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-  isLoading?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  className?: string;
-  href?: string;
-}
-
-export function Button({
-  children,
-  onClick,
-  variant = 'primary',
-  size = 'medium',
-  disabled = false,
-  isLoading = false,
-  type = 'button',
-  className = '',
-  href,
-}: ButtonProps) {
-  const baseStyles = 'rounded-lg font-medium transition-colors';
-  
-  const variantStyles = {
-    primary: 'bg-verde text-white hover:bg-verde/90',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-    danger: 'bg-red-500 text-white hover:bg-red-600',
-  };
-  
-  const sizeStyles = {
-    small: 'px-3 py-1 text-sm',
-    medium: 'px-4 py-2',
-    large: 'px-6 py-3 text-lg',
-  };
-
-  const classes = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
-
-  if (href) {
-    return (
-      <Link href={href} className={classes}>
-        {children}
-      </Link>
-    );
-  }
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled || isLoading}
-      className={classes}
-    >
-      {isLoading ? 'Carregando...' : children}
-    </button>
-  );
-}
+```
+src/
+├── app/                     # rotas, layout, manifest.ts
+├── components/
+│   ├── ui/                  # Button, TextInput, Select, Modal, Skeleton,
+│   │                        # Badge, Spinner, Tooltip, CloseBtn, HeaderBtn
+│   └── feature/             # LoginForm, ThemeToggle, ProtectedPage,
+│                            # DiagnosticsBridge, RealtimeBridge,
+│                            # PwaRegister, Loading, Tooltip
+├── context/                 # AuthContext, ThemeContext
+├── hooks/                   # useApi, useSseStream
+├── libs/                    # fetchClient, clientLogger
+├── services/                # authApi
+├── types/, validators/, utils/
 ```
 
-## Criando uma Página
+Componentes são funcionais, pequenos e com uma responsabilidade. Prefere named
+exports (o `TextInput` é default export por compatibilidade).
+
+## Design tokens
+
+Os tokens estão em `app/globals.css` (variáveis CSS + `@theme inline`) e mudam
+com a classe `.dark`:
+
+- superfícies: `bg-background`, `bg-surface`, `bg-surface-2`
+- texto: `text-foreground`, `text-muted`
+- bordas: `border-border`, `border-border-strong`
+- ação: `bg-accent`, `text-accent-foreground`, `hover:bg-accent-hover`
+- estados: `text-success`, `text-warning`, `text-danger`
+
+Não uses cinzas Tailwind crus (`bg-gray-100`, `text-gray-600`) em UI nova.
+Consulta `/kit` para o padrão visual e `Button.tsx`/`Badge.tsx` para variantes.
+
+## Dados e API
+
+Todo o HTTP passa por `fetchClient` (`@/libs/fetchClient`):
+
+- prefixa `/api/v1` automaticamente;
+- envia cookies (`credentials: 'include'`);
+- adiciona `X-CSRF-Token` em métodos inseguros;
+- renova a sessão em `401` e repete uma vez em `403` de CSRF;
+- expõe `ApiError` com `code`.
 
 ```tsx
-// src/app/products/page.tsx
-'use client';
+import { fetchClient } from '@/libs/fetchClient';
 
-import { useState, useEffect } from 'react';
-import { useApi } from '@/hooks/useApi';
-import { Button } from '@/components/ui/Button';
-import { Loading } from '@/components/ui/Loading';
-import { ErrorMessage } from '@/components/ui/ErrorMessage';
-
-export default function ProductsPage() {
-  const { data, loading, error, execute } = useApi();
-
-  useEffect(() => {
-    execute('get', '/api/products');
-  }, []);
-
-  if (loading) return <Loading />;
-  if (error) return <ErrorMessage message={error} />;
-
-  return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Produtos</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data?.map((product) => (
-          <div key={product.id} className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-xl font-semibold">{product.name}</h2>
-            <p className="text-gray-600">{product.description}</p>
-            <p className="text-verde font-bold mt-2">R$ {product.price}</p>
-            <Button className="mt-4" href={`/products/${product.id}`}>
-              Ver Detalhes
-            </Button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const response = await fetchClient.get('/auth/me');
+const { data } = await response.json();
 ```
 
-## Usando Hooks Customizados
-
-### useApi Hook
+Nunca uses `fetch`/`axios` diretamente para a API. Para estado de pedido, usa
+`useApi`:
 
 ```tsx
-import { useApi } from '@/hooks/useApi';
-
-function MyComponent() {
-  const { data, loading, error, execute } = useApi();
-
-  const handleSubmit = async (formData) => {
-    await execute('post', '/api/products', formData);
-  };
-
-  return (
-    // JSX
-  );
-}
+const { execute, loading, error, data } = useApi();
+await execute('get', '/user');
 ```
 
-### useAuth Hook
+## Auth
+
+`AuthContext` (`useAuth`) expõe `user`, `loading`, `login`, `logout` e restaura a
+sessão com `authApi.restoreSession()`. Não guardes tokens em `localStorage` e
+não dupliques refresh/CSRF — isso é responsabilidade do `fetchClient`.
 
 ```tsx
-import { useAuth } from '@/contexts/AuthContext';
-
-function MyComponent() {
-  const { user, isAuthenticated, login, logout } = useAuth();
-
-  if (!isAuthenticated) {
-    return <div>Faça login para continuar</div>;
-  }
-
-  return <div>Olá, {user.name}!</div>;
-}
+const { user, login } = useAuth();
+await login(email, password);
 ```
 
-## Formulários com React Hook Form
+## Realtime (SSE)
+
+Usa apenas `useSseStream`; ele pede um token curto a `/auth/stream-token` e
+reconecta sozinho:
 
 ```tsx
-'use client';
-
-import { useForm } from 'react-hook-form';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { useApi } from '@/hooks/useApi';
-
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export default function RegisterPage() {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
-  const { execute, loading } = useApi();
-
-  const onSubmit = async (data: FormData) => {
-    await execute('post', '/api/auth/register', data);
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto p-6">
-      <Input
-        label="Nome"
-        {...register('name', { required: 'Nome é obrigatório' })}
-        error={errors.name?.message}
-      />
-      
-      <Input
-        label="Email"
-        type="email"
-        {...register('email', { required: 'Email é obrigatório' })}
-        error={errors.email?.message}
-      />
-      
-      <Input
-        label="Senha"
-        type="password"
-        {...register('password', { required: 'Senha é obrigatória' })}
-        error={errors.password?.message}
-      />
-      
-      <Button type="submit" isLoading={loading} className="w-full mt-4">
-        Cadastrar
-      </Button>
-    </form>
-  );
-}
+useSseStream({
+  enabled: Boolean(user),
+  onMessage: (event) => {
+    if (event.type === 'notification') console.log(event.message);
+  },
+});
 ```
 
-## Estilização com Tailwind
+Não cries `new EventSource` noutro sítio nem coloques o access token no URL.
 
-### Cores do Tema
+## Páginas e formulários
 
-```tsx
-// Use as cores definidas no tailwind.config.ts
-<div className="bg-verde text-white">Verde</div>
-<div className="bg-azul text-white">Azul</div>
-```
+- Páginas que usam `useSearchParams` precisam de `<Suspense>`.
+- Formulários: estado local/`react-hook-form`, validação com os validadores de
+  `src/validators`, erros junto ao campo e erro geral no topo.
+- Mostra `loading` com `Spinner`/`Skeleton` e não faças `console.log` de erros:
+  o `DiagnosticsBridge` já captura `error`/`unhandledrejection`.
+- Componentes de cliente levam `'use client'`; não transformes tudo em client
+  component sem necessidade.
 
-### Responsividade
+## PWA
 
-```tsx
-<div className="
-  grid 
-  grid-cols-1 
-  md:grid-cols-2 
-  lg:grid-cols-3 
-  gap-4
-">
-  {/* Conteúdo */}
-</div>
-```
+`app/manifest.ts` gera o manifest; `public/sw.js` faz cache do app shell e de
+assets estáticos. Regras:
 
-### Modal com Backdrop Blur
+- não cachear `/api`, `/uploads` nem métodos não-GET;
+- o registo (`PwaRegister`) só acontece em produção;
+- ao mudar o shell, sobe a versão do cache em `sw.js`.
 
-```tsx
-<div className="fixed inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center">
-  <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
-    <h2 className="text-2xl font-bold mb-4">Título do Modal</h2>
-    <p>Conteúdo do modal</p>
-  </div>
-</div>
-```
+## Testes
 
-## Recursos
-
-- Consulte componentes existentes em `src/components/`
-- Consulte hooks em `src/hooks/`
-- Consulte contextos em `src/contexts/`
+- Vitest + Testing Library em `*.spec.tsx` ao lado do componente.
+- Mocka `fetch`/`EventSource`; não faças chamadas reais.
+- Para páginas, testa estados de loading, erro e sucesso.
+- `npm test` e `npm run lint` antes de terminar; `npm run build` valida o App
+  Router e o TypeScript.

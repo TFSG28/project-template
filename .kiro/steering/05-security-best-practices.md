@@ -38,25 +38,33 @@ const user = await prisma.user.create({
 
 ## Autenticação
 
-### JWT Token
+### Cookies, refresh e CSRF
 
 ```typescript
-// ✅ BOM - Verificar token
-import { authMiddleware } from '@/middlewares/auth.middleware';
+// ✅ BOM - Rotas protegidas usam o cookie httpOnly access_token
+router.get('/protected', authMiddleware, controller.method);
 
-router.post('/protected', authMiddleware, controller.method);
+// ✅ BOM - Métodos inseguros exigem CSRF
+router.post('/protected', authMiddleware, csrfMiddleware, controller.method);
 
-// ❌ RUIM - Sem verificação
+// ❌ RUIM - Sem auth/CSRF
 router.post('/protected', controller.method);
 ```
+
+- `access_token`: JWT de 15 min, httpOnly.
+- `refresh_token`: opaco, 7 dias, path `/api/v1/auth`, rodado em cada uso.
+- Reutilização de refresh antigo revoga a sessão.
+- `csrf_token` é legível e enviado em `X-CSRF-Token`; nunca uses Bearer ou
+  `localStorage`.
 
 ### Hash de Senhas
 
 ```typescript
-// ✅ BOM - Hash com bcrypt
+// ✅ BOM - Hash com bcrypt e custo configurável
 import bcrypt from 'bcryptjs';
+import { PASSWORD_SALT_ROUNDS } from '../auth.constants';
 
-const hashedPassword = await bcrypt.hash(password, 10);
+const hashedPassword = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
 
 // ❌ RUIM - Senha em texto plano
 const user = await prisma.user.create({
@@ -167,27 +175,32 @@ app.use('/api/', limiter);
 ## Variáveis de Ambiente
 
 ```typescript
-// ✅ BOM - Usar variáveis de ambiente
-const secret = process.env.JWT_SECRET;
+// ✅ BOM - Usar variáveis de ambiente validadas
+import { env } from '@/config/env';
+const secret = env.JWT_SECRET;
 
 // ❌ RUIM - Hardcoded
 const secret = 'minha-senha-secreta'; // Nunca!
 ```
 
+`JWT_SECRET` tem de ter ≥64 caracteres e `ENCRYPTION_KEY` exatamente 64 hex.
+Nunca commites `.env`; usa `.env.example` com placeholders.
+
 ## Checklist de Segurança
 
 - [ ] Validação de entrada implementada
-- [ ] Senhas com hash (bcrypt)
-- [ ] JWT verificado em rotas protegidas
-- [ ] Role verificado antes de operações
+- [ ] Senhas com hash (bcrypt + `PASSWORD_SALT_ROUNDS`)
+- [ ] Cookies httpOnly + CSRF em métodos inseguros
+- [ ] Refresh rotativo e revogação de sessão
 - [ ] Senhas nunca retornadas em responses
-- [ ] Mensagens de erro genéricas
+- [ ] Mensagens de erro genéricas (sem SQL/stack)
 - [ ] CORS configurado corretamente
 - [ ] Rate limiting ativado
-- [ ] Variáveis de ambiente usadas
+- [ ] Variáveis de ambiente validadas (sem segredos hardcoded)
 - [ ] SQL injection prevenido (use Prisma)
-- [ ] HTTPS em produção
-- [ ] Logs de segurança implementados
+- [ ] Uploads com allowlist e anti-path-traversal
+- [ ] HTTPS em produção (cookies `secure`)
+- [ ] Logs de segurança sem tokens/passwords
 
 ## Recursos
 

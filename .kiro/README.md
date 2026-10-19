@@ -1,5 +1,9 @@
 # .kiro Folder
 
+> **Nota:** a fonte de verdade para agentes é [`AGENTS.md`](../AGENTS.md) +
+> [`knowledge.md`](../knowledge.md). Estes guias são material de apoio e podem
+> estar desatualizados; em caso de conflito, ganha `AGENTS.md`.
+
 Esta pasta contém configurações e guias específicos para o Kiro AI Assistant.
 
 ## Estrutura

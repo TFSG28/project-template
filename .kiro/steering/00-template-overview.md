@@ -22,9 +22,11 @@ project-template/
 - **TypeScript** - Tipagem estática
 - **Prisma** - ORM para banco de dados
 - **TSyringe** - Injeção de dependência
-- **JWT** - Autenticação
+- **Cookies httpOnly + CSRF** - Auth (access 15 min, refresh rotativo 7 dias)
+- **AES-256-GCM** - Campos encriptados em repouso
 - **Bcrypt** - Hash de senhas
 - **Nodemailer** - Envio de emails
+- **SSE** - Eventos em tempo real por utilizador
 - **Vitest** - Testes
 
 ### Frontend
@@ -108,10 +110,12 @@ export const userController = container.resolve(UserController);
 - Execute testes antes do build
 
 ### 5. Segurança
-- Hash de senhas com bcrypt
-- JWT para autenticação
-- Validação de tokens
-- Verificação de roles
+- Cookies httpOnly (`access_token` 15 min + `refresh_token` rotativo 7 dias)
+- CSRF double-submit (`X-CSRF-Token` vs cookie `csrf_token`)
+- Recuperação/reset de password com token de uso único
+- Rate limiting e login blocker (conta + IP)
+- AES-256-GCM para campos em repouso
+- Uploads validados (UUID, allowlist, anti-path-traversal)
 
 ## Próximos Passos
 

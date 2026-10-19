@@ -22,9 +22,8 @@ DELETE /resource/:id       - Remove
 ### Recursos Aninhados
 
 ```
-GET    /workspace/:workspaceId/users
-POST   /workspace/:workspaceId/users
-GET    /workspace/:workspaceId/users/:userId
+GET    /users/:userId/sessions
+DELETE /users/:userId/sessions/:sessionId
 ```
 
 ### Ações Especiais

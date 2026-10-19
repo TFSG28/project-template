@@ -1,0 +1,11 @@
+# Regras do projeto
+
+Lê `AGENTS.md` na raiz (fonte de verdade) e `knowledge.md` (convenções).
+
+- Node 24+; backend `npm run build` (prisma generate → testes → lint → tsc →
+  postbuild); frontend `npm run build` + `npm run lint`.
+- Clean Architecture por módulo; auth por cookies httpOnly + CSRF; refresh
+  rotativo; nunca Bearer/localStorage.
+- Frontend: `fetchClient` e `useSseStream` são os únicos pontos de acesso.
+- Prisma gerado em `src/generated/prisma`; não importar `@prisma/client`.
+- Sem segredos, artefactos gerados ou dependências novas sem justificação.

@@ -88,13 +88,14 @@ Sugira:
 
 2. **Proteção de Dados Sensíveis**
    - NUNCA exponha dados sensíveis em mensagens de erro
-   - Hash de senhas com bcryptjs (salt rounds: 10)
-   - Use AES-256-CBC para criptografia de documentos
+   - Hash de senhas com bcryptjs e `PASSWORD_SALT_ROUNDS` (default 12)
+   - Use AES-256-GCM (`encryption.service.ts`) para campos em repouso
 
 3. **Autenticação e Autorização**
-   - Verifique o token JWT (cookie `access_token`) em endpoints protegidos via `authMiddleware`
-   - Verifique a role do usuário com `requireRole(...)` antes de permitir operações
+   - Verifique o cookie httpOnly `access_token` em endpoints protegidos via `authMiddleware`
+   - Usa `requireRole(...)` apenas se o modelo tiver `role`; o template base não inclui roles
    - Proteja pedidos que alteram estado com `csrfMiddleware` (header `X-CSRF-Token` vs cookie `csrf_token`)
+   - Refresh tokens rodam em cada uso; reutilização revoga a sessão
 
 ### Exemplo de Validação com Zod
 ```typescript
@@ -198,10 +199,10 @@ await prisma.$transaction(async (tx) => {
 const user = await prisma.user.findUnique({ where: { id } });
 
 // ❌ RUIM - N+1 queries
-const users = await prisma.user.findMany();
-for (const user of users) {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: user.workspaceId }
+const sessions = await prisma.session.findMany();
+for (const session of sessions) {
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId }
   });
 }
 ```

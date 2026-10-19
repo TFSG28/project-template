@@ -32,26 +32,37 @@ Guia para fazer deploy do template em produção.
 ### Backend (.env)
 
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@host:5432/dbname"
+# Database (o adapter MariaDB lê as variáveis separadas)
+DATABASE_URL="mysql://user:password@host:3306/database"
+DATABASE_USER="user"
+DATABASE_PASSWORD="password"
+DATABASE_NAME="database"
+DATABASE_HOST="host"
+DATABASE_PORT=3306
 
-# JWT
-JWT_SECRET="seu-secret-super-seguro"
-JWT_EXPIRES_IN="7d"
+# Secrets
+JWT_SECRET="<openssl rand -base64 64>"          # >= 64 chars
+ENCRYPTION_KEY="<openssl rand -hex 32>"         # exatamente 64 hex
 
-# CORS
-FRONTEND_URL="https://seu-frontend.com"
-
-# Email
-SMTP_HOST="smtp.gmail.com"
-SMTP_PORT=587
-SMTP_USER="seu-email@gmail.com"
-SMTP_PASS="sua-senha"
-
-# Server
+# Server / CORS
+FRONT_URL="https://yourdomain.com"
 PORT=3001
-NODE_ENV="production"
+NODE_ENV=production
+
+# Email (opcional)
+IP_SERVER="smtp.example.com"
+EMAIL="user@example.com"
+EMAIL_PASS="password"
+BUSINESS_NAME="Your Business"
+
+# Storage/logs persistentes (defaults: <cwd>/uploads e <cwd>/logs/front)
+UPLOAD_DIR="/var/lib/project-template/uploads"
+LOG_DIR="/var/log/project-template/front"
 ```
+
+`NODE_ENV=production` marca os cookies como `secure`: o backend tem de estar
+atrás de HTTPS. Não existe `JWT_EXPIRES_IN`; os TTLs estão em
+`auth.constants.ts`.
 
 ### Frontend (.env.production)
 

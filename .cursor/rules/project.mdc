@@ -1,0 +1,18 @@
+---
+description: Regras do projeto (Clean Architecture, auth por cookies, Prisma, frontend)
+alwaysApply: true
+---
+
+Lê `AGENTS.md` na raiz — é a fonte de verdade — e `knowledge.md` para as
+convenções completas.
+
+Resumo:
+
+- Backend Express 5 + TypeScript + Prisma 7/MySQL; frontend Next.js 16 +
+  React 19; Node 24+.
+- Clean Architecture por módulo; rotas finas; `AppError` com `code` estável.
+- Auth por cookies httpOnly + CSRF, refresh rotativo. Nunca Bearer/localStorage.
+- `fetchClient` é o único cliente HTTP; `useSseStream` é o único SSE.
+- Prisma gerado em `src/generated/prisma`; não importar `@prisma/client`.
+- `npm run build` no backend inclui `prisma generate`, testes, lint e `tsc`.
+- Mudanças mínimas; atualiza `API.md`/`ARCHITECTURE.md` quando o contrato mudar.
