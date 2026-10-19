@@ -1,0 +1,546 @@
+openapi: 3.0.3
+info:
+  title: Perfect Template API
+  description: |
+    API RESTful com Clean Architecture. Autenticação por cookies httpOnly,
+    refresh token rotativo e proteção CSRF por double-submit.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3001
+    description: Desenvolvimento
+  - url: https://api.example.com
+    description: Produção
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Uploads
+  - name: Diagnostics
+  - name: Realtime
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Estado detalhado (DB + memória)
+      responses:
+        '200':
+          description: Saudável
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Base de dados indisponível
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe
+      responses:
+        '200':
+          description: Pronto
+        '503':
+          description: Não pronto
+
+  /health/live:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      responses:
+        '200':
+          description: Vivo
+
+  /metrics:
+    get:
+      tags: [Health]
+      summary: Métricas Prometheus
+      responses:
+        '200':
+          description: Métricas em formato Prometheus
+
+  /api/v1/health:
+    get:
+      tags: [Health]
+      summary: Health check leve da API
+      responses:
+        '200':
+          description: API a responder
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Autenticar utilizador
+      description: Define os cookies access_token, refresh_token e csrf_token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login bem-sucedido
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: access_token, refresh_token e csrf_token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Utilizador autenticado
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Utilizador atual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotacionar a sessão
+      description: |
+        Usa o cookie refresh_token, emite um novo par de tokens e deteta
+        reutilização de tokens antigos (revoga a sessão).
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: Sessão renovada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      csrfToken:
+                        type: string
+        '401':
+          description: Sessão inválida, expirada ou reutilizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Terminar sessão
+      description: |
+        O access token pode estar expirado; a revogação usa o refresh cookie.
+        Requer o header CSRF.
+      parameters:
+        - $ref: '#/components/parameters/CsrfToken'
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: Sessão revogada e cookies limpos
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/auth/stream-token:
+    get:
+      tags: [Auth]
+      summary: Token curto para EventSource
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Token com scope realtime (15 min)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/auth/recover-password:
+    post:
+      tags: [Auth]
+      summary: Pedir recuperação de password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Resposta genérica (não revela se o email existe)
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /api/v1/auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Definir nova password com token de recuperação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+      responses:
+        '200':
+          description: Password alterada; todas as sessões revogadas
+        '400':
+          description: Token inválido/expirado ou password fraca
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /api/v1/user:
+    post:
+      tags: [Users]
+      summary: Criar utilizador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Utilizador criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email já registado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/uploads:
+    post:
+      tags: [Uploads]
+      summary: Upload de anexo
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CsrfToken'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Ficheiro guardado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Ficheiro em falta ou tipo não permitido
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: Ficheiro acima de 25 MB
+
+  /uploads/{path}:
+    get:
+      tags: [Uploads]
+      summary: Descarregar/visualizar anexo público
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conteúdo do ficheiro (attachment para tipos ativos)
+        '404':
+          description: Não encontrado
+
+  /api/v1/diagnostics/client-log:
+    post:
+      tags: [Diagnostics]
+      summary: Registar erro/warning do frontend
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientLogRequest'
+      responses:
+        '200':
+          description: Log aceite
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /api/v1/realtime/stream:
+    get:
+      tags: [Realtime]
+      summary: Stream SSE do utilizador
+      parameters:
+        - in: query
+          name: token
+          required: true
+          description: Token curto obtido em /auth/stream-token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stream text/event-stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+
+  parameters:
+    CsrfToken:
+      in: header
+      name: X-CSRF-Token
+      required: true
+      description: Valor de csrf_token devolvido no login/refresh
+      schema:
+        type: string
+
+  responses:
+    ValidationError:
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+    Unauthorized:
+      description: Não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: CSRF ou permissão inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Demasiadas tentativas
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+        services:
+          type: object
+        memory:
+          type: object
+
+    ErrorResponse:
+      type: object
+      required: [status, code, message]
+      properties:
+        status:
+          type: string
+          enum: [error]
+        code:
+          type: string
+          example: UNAUTHORIZED
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserResponse'
+            csrfToken:
+              type: string
+
+    MeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/UserResponse'
+
+    CreateUserRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          minLength: 3
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 6
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    UploadResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: object
+          properties:
+            url:
+              type: string
+              example: /uploads/users/uuid/file.png
+            filename:
+              type: string
+            size:
+              type: integer
+            contentType:
+              type: string
+
+    ClientLogRequest:
+      type: object
+      required: [level, message]
+      properties:
+        level:
+          type: string
+          enum: [error, warn]
+        message:
+          type: string
+          maxLength: 2000
+        context:
+          type: object
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true

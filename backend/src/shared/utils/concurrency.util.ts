@@ -1,0 +1,40 @@
+/**
+ * Corre `fn` sobre cada item com no máximo `limit` em paralelo, preservando a
+ * ordem dos resultados (índices alinhados com a entrada). Devolve
+ * `PromiseSettledResult`, tal como `Promise.allSettled`: uma falha num item
+ * não cancela os restantes.
+ *
+ * Útil em envios em lote (email/push): disparar centenas ao mesmo tempo
+ * sobrecarrega o fornecedor com timeouts/limites.
+ */
+export async function mapWithConcurrency<T, R>(
+    items: readonly T[],
+    limit: number,
+    fn: (item: T) => Promise<R>
+): Promise<PromiseSettledResult<R>[]> {
+    if (!Number.isInteger(limit) || limit < 1) {
+        throw new Error('mapWithConcurrency: limit must be a positive integer');
+    }
+
+    const results: PromiseSettledResult<R>[] = new Array(items.length);
+    let cursor = 0;
+
+    const worker = async (): Promise<void> => {
+        while (true) {
+            const index = cursor++;
+            if (index >= items.length) return;
+
+            try {
+                results[index] = { status: 'fulfilled', value: await fn(items[index]) };
+            } catch (reason) {
+                results[index] = { status: 'rejected', reason };
+            }
+        }
+    };
+
+    await Promise.all(
+        Array.from({ length: Math.min(limit, items.length) }, () => worker())
+    );
+
+    return results;
+}

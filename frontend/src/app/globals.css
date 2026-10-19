@@ -1,0 +1,140 @@
+@import "tailwindcss";
+@import "react-toastify/dist/ReactToastify.css";
+
+/* Enable class-based dark mode so `dark:` utilities follow the .dark class
+   (set on <html> by ThemeContext), not just prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens
+ * -------------
+ * Components consume semantic names (surface, border, accent) instead of raw
+ * grays. Change a value here and the whole UI follows.
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  --surface: #fafafa;
+  --surface-2: #f1f2f4;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --border-strong: #d1d5dc;
+
+  --accent: #171717;
+  --accent-foreground: #ffffff;
+  --accent-hover: #2f2f2f;
+  --ring: #171717;
+
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --danger: #dc2626;
+  --danger-foreground: #ffffff;
+
+  --bgToggle: #D1D5DC;
+  --bgBtn: #000000;
+}
+
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  --surface: #121212;
+  --surface-2: #1c1c1f;
+  --muted: #a1a1aa;
+  --border: #2a2a2e;
+  --border-strong: #3f3f46;
+
+  --accent: #ededed;
+  --accent-foreground: #0a0a0a;
+  --accent-hover: #d4d4d8;
+  --ring: #ededed;
+
+  --success: #22c55e;
+  --success-foreground: #052e16;
+  --warning: #f59e0b;
+  --warning-foreground: #1c1917;
+  --danger: #ef4444;
+  --danger-foreground: #1f0707;
+
+  --bgToggle: #364153;
+  --bgBtn: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-bgToggle: var(--bgToggle);
+  --color-bgBtn: var(--bgBtn);
+  --color-hoverColor: #99a1af;
+  --color-bc: #d1d5dc;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.title {
+  font-size: 44px;
+  line-height: 1.1;
+  font-weight: 600;
+}
+
+.title2 {
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.title3 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

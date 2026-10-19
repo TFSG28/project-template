@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider      = "prisma-client-js"
+    output        = "../src/generated/prisma"
+    binaryTargets = ["native", "debian-openssl-1.0.x"]
+}
+
+datasource db {
+    provider = "mysql"
+}
+
+model User {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    name     String
+    email    String  @unique
+    password String
+    isActive Boolean @default(true)
+
+    sessions            Session[]
+    passwordResetTokens PasswordResetToken[]
+
+    @@index([id])
+    @@index([email])
+}
+
+// Sessões com refresh token opaco: o cliente recebe `<id>.<secret>` e a BD
+// guarda apenas o hash bcrypt do secret. Permite rotação e deteção de reuso.
+model Session {
+    id           String   @id @default(uuid())
+    userId       String
+    refreshToken String   @unique
+    isActive     Boolean  @default(true)
+    expiresAt    DateTime
+    createdAt    DateTime @default(now())
+    lastUsedAt   DateTime @default(now())
+    ipAddress    String?
+    userAgent    String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([expiresAt])
+    @@index([isActive])
+}
+
+// Tokens de recuperação de password. Uso único e curta duração (2h).
+model PasswordResetToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    userId    String
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([expiresAt])
+}
+
+// Lock distribuído para jobs cron (uma linha por job). O lease usa DB time.
+model CronLock {
+    id        String   @id @default(uuid())
+    name      String   @unique
+    owner     String?
+    expiresAt DateTime?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([expiresAt])
+}

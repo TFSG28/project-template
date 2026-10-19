@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: perfect-template-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: perfect_template
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - perfect-template-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: perfect-template-backend
+    restart: always
+    environment:
+      DATABASE_URL: "mysql://user:password@mysql:3306/perfect_template"
+      DATABASE_USER: "user"
+      DATABASE_PASSWORD: "password"
+      DATABASE_NAME: "perfect_template"
+      DATABASE_HOST: "mysql"
+      DATABASE_PORT: 3306
+      # Replace both secrets before exposing this stack. The JWT secret must be
+      # at least 64 characters; the encryption key exactly 64 hex characters.
+      JWT_SECRET: "${JWT_SECRET:-change-me-to-a-random-string-with-at-least-64-characters-long-0123456789}"
+      ENCRYPTION_KEY: "${ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}"
+      FRONT_URL: "http://localhost:3000"
+      PORT: 3001
+      # Local compose is plain HTTP; secure cookies would never be sent.
+      # Set to production only behind HTTPS.
+      NODE_ENV: development
+      BUSINESS_NAME: "Perfect Template"
+      UPLOAD_DIR: "/app/uploads"
+      LOG_DIR: "/app/logs/front"
+    ports:
+      - "3001:3001"
+    volumes:
+      - uploads_data:/app/uploads
+      - logs_data:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - perfect-template-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health/live', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* is baked into the browser bundle at build time.
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:3001}"
+    container_name: perfect-template-frontend
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:3001}"
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - perfect-template-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mysql_data:
+  uploads_data:
+  logs_data:
+
+networks:
+  perfect-template-network:
+    driver: bridge
