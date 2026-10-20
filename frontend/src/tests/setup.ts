@@ -1,7 +1,7 @@
 // Test setup file
 // This runs before all tests
 
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { beforeAll, afterAll } from 'vitest';
 
 beforeAll(() => {
