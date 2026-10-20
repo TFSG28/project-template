@@ -59,9 +59,11 @@ usa `npx playwright install chromium` (uma vez por máquina/CI).
 ## Registo do Figma MCP
 
 O servidor Framelink (`figma-developer-mcp`) precisa de um token pessoal
-Figma. **Nunca o commits** — fica em configuração de utilizador (ver
-`tools/mcp-context/README.md`, secção "Figma"). A key pode ir no campo `env`
-(`FIGMA_API_KEY`) em vez de argumentos.
+Figma. **Nunca o commits** — a fonte única é a shell: `export
+FIGMA_API_KEY=figd_xxx` em `~/.zshenv`/`~/.profile`, e todos os clientes MCP
+herdam sem campo `env` nas configs (detalhes em
+`tools/mcp-context/README.md`, secção "Figma"). Os `.env*` do frontend não
+servem: só o Next os carrega.
 
 ## Workflow com um agente
 

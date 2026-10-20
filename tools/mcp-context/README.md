@@ -99,9 +99,30 @@ Notas práticas:
 O servidor [`figma-developer-mcp`](https://github.com/GLips/Figma-Context-MCP)
 dá acesso aos dados dos nós do Figma (`get_figma_data`) e à descarga de assets
 (`download_figma_images`). Precisa de um [token pessoal
-Figma](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens)
-— **nunca o commits**; usa o campo `env` (o servidor lê `FIGMA_API_KEY`) em
-configuração de utilizador:
+Figma](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens).
+
+### Fonte única do token (recomendado)
+
+O token vive **uma** vez na shell e todos os clientes herdam:
+
+```bash
+# ~/.zshenv (zsh) ou ~/.profile (bash)
+export FIGMA_API_KEY=figd_xxx
+```
+
+Com o export feito, nenhuma config de MCP precisa de campo `env` nem de token
+em ficheiro de projeto: os servidores MCP são spawnados pelo cliente e herdam
+o ambiente do processo pai (DeepCode inclui). Isto vale para OpenCode, Claude
+Code, Cursor e DeepCode desde que o cliente arranque a partir dessa shell —
+no padrão `code .`/CLI normais, cobre tudo.
+
+**Não** uses os `.env*` do frontend como fonte: só o Next os carrega; os
+clients MCP nunca os leem. O `.env.example` documenta isto.
+
+### Registo por cliente
+
+Snippet comum (sem campo `env` — o token vem da shell). O nome `figma` é o que
+define o prefixo das tools.
 
 ```json
 {
@@ -109,8 +130,7 @@ configuração de utilizador:
     "figma": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--stdio"],
-      "env": { "FIGMA_API_KEY": "<token>" }
+      "args": ["-y", "figma-developer-mcp", "--stdio"]
     }
   }
 }
@@ -129,8 +149,7 @@ Notas:
 
 - `download_figma_images` grava no cwd do servidor; convém definir `IMAGE_DIR`
   (absoluto) ou `--image-dir` para direcionar os assets para `public/`.
-- Para desligar a telemetria do Framelink, adiciona
-  `"FRAMELINK_TELEMETRY": "off"` ao `env`.
+- Telemetria do Framelink: `export FRAMELINK_TELEMETRY=off` na mesma shell.
 - O workflow completo (PNG de referência + assets + loop `npm run compare`)
   está em [`docs/design.md`](../../docs/design.md).
 
