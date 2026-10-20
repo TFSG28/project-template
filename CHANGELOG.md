@@ -51,9 +51,9 @@ mantendo a filosofia *Ponytail* do template (mínimo código, módulos opcionais
   Windsurf e Kiro.
 - `opencode.jsonc` para OpenCode: `AGENTS.md` nativo, `knowledge.md` em
   `instructions` e servidor MCP.
-- `.deepcode/settings.json` para Deep Code (CLI + extensão VS Code), que lê
-  `AGENTS.md` nativamente e expõe as ferramentas como
-  `mcp__project-context__*`.
+- DeepCode (extensão VS Code + bridge) lê o `.mcp.json` da raiz nativamente e
+  expõe as ferramentas como `project-context:<ferramenta>`; sem API key (o IDE
+  liga-se ao chat web do DeepSeek).
 - Servidor MCP read-only (`tools/mcp-context/`, stdio, zero dependências) com
   `project_overview`, `get_rules`, `list_docs`, `read_doc`, `search_docs`,
   recursos `project://…` e prompts. Registos em `.mcp.json` e

@@ -183,18 +183,18 @@ O repositório traz contexto explícito para agentes de AI, estático e via MCP:
   `list_docs`, `read_doc`, `search_docs`, recursos `project://…` e prompts.
   Funciona com qualquer cliente MCP: OpenCode, VS Code/Copilot, Claude Code,
   Cursor, Windsurf, Cline, Roo Code, Continue ou uma extensão própria.
-- [`.mcp.json`](./.mcp.json), [`.cursor/mcp.json`](./.cursor/mcp.json) e
-  [`.deepcode/settings.json`](./.deepcode/settings.json) — registos do servidor
-  para Claude Code/Copilot, Cursor e Deep Code (CLI + extensão VS Code).
+- [`.mcp.json`](./.mcp.json) e [`.cursor/mcp.json`](./.cursor/mcp.json) —
+  registos do servidor para Claude Code/Copilot, Cursor e DeepCode (que lê
+  `.mcp.json` nativamente).
 - [`.kiro/steering/`](./.kiro/steering/) — guias detalhados para o Kiro.
 - [`knowledge.md`](./knowledge.md) — convenções completas e filosofia Ponytail.
 
 O modelo é independente do contexto: podes usar **DeepSeek**. No OpenCode,
-define `DEEPSEEK_API_KEY` e escolhe `deepseek/deepseek-v4-flash`; no Deep Code,
-a key fica em `~/.deepcode/settings.json` (`env.API_KEY`) e o `/mcp` mostra as
-ferramentas `mcp__project-context__*`; numa extensão, guarda a key no secret
-storage dela. O servidor MCP fornece o contexto do projeto. Se estiveres a usar
-outro agente, dá-lhe `AGENTS.md` como contexto inicial.
+define `DEEPSEEK_API_KEY` e escolhe `deepseek/deepseek-v4-flash`. No DeepCode,
+não há API key — o IDE liga-se ao chat web do DeepSeek e o chat acede ao código
+pelas tools do gateway (ficheiros, terminal, `project-context:<ferramenta>` do
+MCP). O servidor MCP fornece o contexto do projeto. Se estiveres a usar outro
+agente, dá-lhe `AGENTS.md` como contexto inicial.
 
 ## Documentação
 

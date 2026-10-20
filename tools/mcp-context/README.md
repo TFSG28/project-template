@@ -64,35 +64,35 @@ O ID do modelo no catálogo é `deepseek/deepseek-v4-flash` (também existe
 `deepseek/deepseek-v4-pro`). Para o fixar, descomenta `"model"` em
 `opencode.jsonc`.
 
-## Deep Code (VS Code + CLI)
+## DeepCode (extensão VS Code + bridge)
 
-O Deep Code lê `AGENTS.md` nativamente (documentação oficial: `docs/agents-md.md`)
-e suporta MCP via `mcpServers`. O repositório já inclui
-[`.deepcode/settings.json`](../../.deepcode/settings.json) com o servidor
-`project-context`.
+O DeepCode liga o chat web (DeepSeek, ChatGPT, Gemini…) ao VS Code através de
+uma extensão no IDE e de um bridge no browser — **sem API key**. O gateway lê
+definições MCP no formato Claude Code (`{"mcpServers": {…}}`) e o repositório
+já inclui [`.mcp.json`](../../.mcp.json) com o servidor `project-context`.
 
-- Config global: `~/.deepcode/settings.json` (modelo, API key, MCP).
-- Config do projeto: `<repo>/.deepcode/settings.json` (faz override, sem
-  segredos).
-- No chat, `/mcp` mostra o estado do servidor e as ferramentas, com nomes
-  `mcp__project-context__project_overview`, `…__read_doc`, etc.
-- `AGENTS.md` é o contexto estável; `.deepcode/AGENTS.md` serve apenas para
-  regras específicas do Deep Code.
+Fontes de MCP, por ordem de precedência (a última ganha):
 
-A API key DeepSeek fica em `~/.deepcode/settings.json` (`env.API_KEY`) e nunca
-no repositório. Se o servidor não arrancar porque o Deep Code não foi aberto na
-raiz do repo, usa um caminho absoluto:
+1. `mcp/default.json` incluído na extensão (Playwright)
+2. `deepcodeGateway.mcpConfigFiles` (caminhos absolutos)
+3. `~/.claude.json` → `~/.agents/mcp.json` (global)
+4. `<workspace>/.mcp.json` → `<workspace>/.agents/mcp.json` (projeto)
+5. Setting `deepcodeGateway.servers` (Workspace/User `settings.json`)
 
-```json
-{
-  "mcpServers": {
-    "project-context": {
-      "command": "node",
-      "args": ["/caminho/absoluto/para/project-template/tools/mcp-context/server.mjs"]
-    }
-  }
-}
-```
+Notas práticas:
+
+- As ferramentas aparecem ao chat como `project-context:project_overview`,
+  `project-context:read_doc`, etc.
+- O formato aceita `type` (`stdio`/`sse`/`http`), `command`, `args`, `url`,
+  `headers`, `env` e `disabled`, e tolera comentários e vírgulas finais no JSON.
+- Em `args`, só `.` e `${workspaceFolder}` exatos são substituídos pela raiz do
+  workspace; um caminho relativo como `tools/mcp-context/server.mjs` resolve-se
+  contra o cwd do extension host. Como o servidor calcula a raiz a partir do
+  próprio ficheiro, basta abrir o VS Code a partir da raiz do repo (`code .`).
+  Se precisares de garantia, usa um caminho absoluto em
+  `deepcodeGateway.servers`.
+- No bootstrap, o chat recebe `AGENTS.md` (ou `CLAUDE.md`) e `USER_RULES.md`
+  através da tool interna `get_project_rules` — não é preciso duplicar regras.
 
 ## Claude Code / GitHub Copilot (VS Code)
 
@@ -183,25 +183,10 @@ para o servidor (as extensões não têm todas o mesmo working directory):
 3. Adiciona o servidor MCP `project-context` como acima.
 4. Pede ao agente para começar por `project_overview` ou `get_rules`.
 
-No **Deep Code**, a configuração do modelo fica no ficheiro global
-`~/.deepcode/settings.json`:
-
-```json
-{
-  "env": {
-    "MODEL": "deepseek-v4-flash",
-    "BASE_URL": "https://api.deepseek.com",
-    "API_KEY": "sk-..."
-  },
-  "thinkingEnabled": true,
-  "reasoningEffort": "max"
-}
-```
-
-O `.deepcode/settings.json` do repositório só contém o `mcpServers` e pode ser
-commitado; a API key nunca entra no repo.
-
-A API key não passa por este servidor e não é necessária para o MCP.
+No **DeepCode** não há API key: o IDE liga-se ao chat web do DeepSeek e o chat
+usa as tools do gateway (`read_file`, `edit_file`, `execute_command`, …) mais as
+ferramentas MCP `project-context:*`. Nenhuma key está envolvida nem é
+necessária para o MCP.
 
 ## Adicionar documentos
 

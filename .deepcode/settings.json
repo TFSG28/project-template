@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "project-context": {
-      "command": "node",
-      "args": ["tools/mcp-context/server.mjs"]
-    }
-  }
-}
