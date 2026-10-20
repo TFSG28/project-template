@@ -94,6 +94,46 @@ Notas práticas:
 - No bootstrap, o chat recebe `AGENTS.md` (ou `CLAUDE.md`) e `USER_RULES.md`
   através da tool interna `get_project_rules` — não é preciso duplicar regras.
 
+## Figma (Framelink)
+
+O servidor [`figma-developer-mcp`](https://github.com/GLips/Figma-Context-MCP)
+dá acesso aos dados dos nós do Figma (`get_figma_data`) e à descarga de assets
+(`download_figma_images`). Precisa de um [token pessoal
+Figma](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens)
+— **nunca o commits**; usa o campo `env` (o servidor lê `FIGMA_API_KEY`) em
+configuração de utilizador:
+
+```json
+{
+  "mcpServers": {
+    "figma": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--stdio"],
+      "env": { "FIGMA_API_KEY": "<token>" }
+    }
+  }
+}
+```
+
+Onde registar:
+
+| Cliente | Ficheiro |
+| --- | --- |
+| DeepCode | `<workspace>/.mcp.json` (não commits) ou `deepcodeGateway.servers` em settings de utilizador; tools ficam como `figma:get_figma_data` |
+| OpenCode | `~/.config/opencode/opencode.json` (mcp `type: "local"`) |
+| Claude Code / Copilot | `~/.claude.json` ou `<repo>/.mcp.json` (não commits) |
+| Cursor | MCP settings globais por forma a não ficar no repo |
+
+Notas:
+
+- `download_figma_images` grava no cwd do servidor; convém definir `IMAGE_DIR`
+  (absoluto) ou `--image-dir` para direcionar os assets para `public/`.
+- Para desligar a telemetria do Framelink, adiciona
+  `"FRAMELINK_TELEMETRY": "off"` ao `env`.
+- O workflow completo (PNG de referência + assets + loop `npm run compare`)
+  está em [`docs/design.md`](../../docs/design.md).
+
 ## Claude Code / GitHub Copilot (VS Code)
 
 O ficheiro [`.mcp.json`](../../.mcp.json) na raiz usa o formato portátil

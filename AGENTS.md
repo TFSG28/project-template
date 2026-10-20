@@ -163,6 +163,19 @@ frontend/src/
 - PWA: o service worker não cacheia `/api`, `/uploads` nem métodos não-GET.
 - Componentes pequenos, funcionais, named exports; sem `any`.
 
+## Design a partir do Figma
+
+- Três fontes de verdade combinadas: Figma MCP (valores exatos), PNG @2x em
+  `frontend/design/` (intenção visual) e assets exportados em `public/`
+  (nada é redesenhado). Workflow completo: `docs/design.md`.
+- Valores exatos dos nós Figma; cores/spacing/radios como tokens Tailwind
+  primeiro (`globals.css`); sem inventar assets; uma secção de cada vez.
+- Após cada secção, no `frontend/`: `npm run compare -- <frame> <largura>`
+  e corrige todas as diferenças visíveis antes de avançar (diff em
+  `design/out/<frame>-diff.png`).
+- O token Figma nunca é commitado; registo MCP por cliente em
+  `tools/mcp-context/README.md` (secção "Figma").
+
 ## Dados e Prisma
 
 - Importa o client de `src/generated/prisma/client` (caminho relativo), nunca de

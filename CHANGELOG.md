@@ -54,6 +54,10 @@ mantendo a filosofia *Ponytail* do template (mínimo código, módulos opcionais
 - DeepCode (extensão VS Code + bridge) lê o `.mcp.json` da raiz nativamente e
   expõe as ferramentas como `project-context:<ferramenta>`; sem API key (o IDE
   liga-se ao chat web do DeepSeek).
+- Suporte a Figma model-agnóstico: servidor Framelink documentado por cliente
+  (`FIGMA_API_KEY` por env, nunca commitado), referências PNG @2x em
+  `frontend/design/` e loop de comparação visual `npm run compare`
+  (Playwright + pixelmatch) descrito em `docs/design.md`.
 - Servidor MCP read-only (`tools/mcp-context/`, stdio, zero dependências) com
   `project_overview`, `get_rules`, `list_docs`, `read_doc`, `search_docs`,
   recursos `project://…` e prompts. Registos em `.mcp.json` e

@@ -205,6 +205,7 @@ agente, dá-lhe `AGENTS.md` como contexto inicial.
 - [DEPLOYMENT.md](./DEPLOYMENT.md) — deploy manual/Docker
 - [SECURITY.md](./SECURITY.md) — política de segurança
 - [docs/runbook.md](./docs/runbook.md) — operações
+- [docs/design.md](./docs/design.md) — implementação de design a partir do Figma
 - [docs/openapi.yaml](./docs/openapi.yaml) — especificação OpenAPI
 - [tools/mcp-context/README.md](./tools/mcp-context/README.md) — servidor MCP e integração com editores
 - [knowledge.md](./knowledge.md) — convenções do projeto
