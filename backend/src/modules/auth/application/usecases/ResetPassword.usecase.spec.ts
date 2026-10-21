@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import bcrypt from 'bcryptjs';
 import { ResetPasswordUseCase } from './ResetPassword.usecase';
 import { InvalidPasswordResetTokenError } from '../../domain/errors/InvalidPasswordResetToken.error';
 import { PasswordResetToken } from '../../domain/entities/PasswordResetToken.entity';
@@ -62,7 +61,7 @@ describe('ResetPasswordUseCase', () => {
 
         const [, update] = vi.mocked(mockUserRepository.update).mock.calls[0];
         expect(update.password).not.toBe('novaSenhaSegura123');
-        expect(update.password.startsWith('$2')).toBe(true);
+        expect(update.password?.startsWith('$2')).toBe(true);
 
         expect(mockResetTokenRepository.delete).toHaveBeenCalledWith('token-bruto');
         expect(mockSessionRepository.deactivateAllByUserId).toHaveBeenCalledWith(user.id);
