@@ -103,6 +103,12 @@ For multi-step tasks, state a brief plan:
 - Document version constraints in project files.
 - Remove unused dependencies regularly.
 - Use lock files to ensure consistent installations across environments.
+- **Template-specific (versioning):** lockfiles are committed and are the
+  source of truth for installs. Runtime majors keep the current `^` range; a
+  NEW major only enters through an explicit, tested migration, never as a
+  side effect of an install. Prisma stays exact-pinned so schema and
+  generated client move together. `npm run update-deps` (interactive) is the
+  intended upgrade path.
 
 ## Code Quality Standards
 
@@ -391,12 +397,17 @@ reintroduce alternatives that were removed.
 - Components consume design tokens; no raw Tailwind grays for surfaces/borders.
 - `useSseStream` for realtime; never build an `EventSource` elsewhere.
 - New pages: use the semantic classes and check `/kit` for the pattern.
+- Browser E2E lives in `src/tests/e2e/` (Playwright, port 4000, same-origin
+  through the dev-only `rewrites()` proxy in `next.config.ts`). Do not name
+  e2e files with `*.spec.ts` patterns that Vitest could pick up elsewhere.
 
 ### Checks before finishing
 - Features: tests written **before** the implementation (TDD) and all
   applicable test types in place — see "Testing" above and `AGENTS.md`.
 - Backend: `npm run build` (runs prisma generate, tests, lint, tsc, copy).
 - Frontend: `npm run build` (tests + Next build) and `npm run lint`.
+- Backend docs: `npm run check:docs` — routes and error codes aligned with
+  `API.md`/`docs/openapi.yaml`.
 - Non-trivial logic leaves one small test behind; storage/SSE/auth already have
   theirs in the adjacent `*.spec.ts` files.
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, InputHTMLAttributes, useState } from 'react';
+import { forwardRef, InputHTMLAttributes, useState, useId } from 'react';
 import { IoMdEyeOff, IoMdEye } from 'react-icons/io';
 
 interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -11,18 +11,23 @@ interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     ({ label, error, helperText, className, required, type = '', ...props }, ref) => {
-        const [showPassword, setShowPassword] = useState<boolean>(false);
+        const [showPassword, setShowPassword] = useState(false);
+        // Associate label↔input: the autoId also serves assistive tech and
+        // testing (getByLabel). An explicit id passed by the caller wins.
+        const autoId = useId();
+        const inputId = props.id ?? autoId;
         const inputType = type === 'password' && showPassword ? 'text' : type;
         return (
             <div className="flex flex-col gap-1 w-full">
                 {label && (
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-gray-700" htmlFor={inputId}>
                         {label}{required && <span className='text-gray-400 ml-1'>*</span>}
                     </label>
                 )}
                 <div className='flex gap-2 items-center'>
                     <input
                         ref={ref}
+                        id={inputId}
                         type={inputType||"text"}
                         className={`
                         px-3 py-2 border rounded transition-colors w-full

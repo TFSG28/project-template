@@ -1,7 +1,5 @@
-import { PrismaClient } from '../src/generated/prisma';
+import { prisma } from '../src/lib/prisma'; // mesma ligação da app (adapter MariaDB + env)
 import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
 
 async function main() {
     console.log('Iniciando seed do banco de dados...');

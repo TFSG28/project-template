@@ -63,6 +63,7 @@ npm run build          # prisma generate → vitest → eslint → tsc → postb
 npm test               # vitest (unit; sem DB)
 npm run test:e2e       # Playwright (precisa de DB/servidor)
 npm run lint
+npm run check:docs     # rotas + códigos de erro alinhados com API.md/openapi.yaml
 npm run db-update      # prisma generate + db push
 npm run db-seed
 
@@ -78,6 +79,11 @@ npm run lint
 Regras:
 
 - Node **24+** (`.nvmrc`).
+- Versões: majors atuais fixados no `package.json` (`^`), lockfile sempre
+  commitado (instalação determinística). Um major novo só entra por decisão
+  explícita, com migração testada — nunca "de passagem". `npm run update-deps`
+  é interativo por um motivo. Prisma fica pinado exato (`7.10.1`) para gerar
+  client e schema em sincronia.
 - Não corras `tsc` isolado para produzir deploy: o `postbuild` copia o client
   Prisma para `dist/generated`.
 - Testes unitários não podem depender de MySQL; o setup injeta env fictícias.
@@ -206,7 +212,11 @@ frontend/src/
 - Backend: Vitest; `tests/setup.ts` fornece env fictícias. Não exijas DB em
   testes unitários.
 - Frontend: Vitest + Testing Library; mocks de `fetch`/`EventSource`.
-- E2E: Playwright, separado (`npm run test:e2e`).
+- E2E: Playwright, separado (`npm run test:e2e`), em **ambos** os pacotes. No
+  frontend corre na porta própria 4000 em mode same-origin — o proxy dev-only
+  `rewrites()` no `next.config.ts` encaminha `/api/v1` e `/uploads` ao backend
+  (:3001), espelhando o reverse proxy do deploy. Não substituas por CORS
+  cross-origin: o e2e fica fiel ao fluxo de cookies/CSRF de produção.
 
 ## Definition of done
 
@@ -220,6 +230,9 @@ frontend/src/
    `knowledge.md` e/ou `docs/openapi.yaml`.
 6. Mudanças de env documentadas em `backend/.env.example` e `SETUP.md`.
 7. Se mexeste no servidor MCP: `cd tools/mcp-context && npm test`.
+8. `cd backend && npm run check:docs` verde — garante que rotas ou códigos de
+   erro novos não ficam por documentar (substitui o "atualiza API.md" manual
+   do ponto 5 por verificação, não boa-fé).
 
 ## Nunca
 

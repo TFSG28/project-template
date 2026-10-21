@@ -59,6 +59,24 @@ Error:
 
 Clients should branch on `code`, not on the translated `message`.
 
+Stable error codes (verified by `node scripts/check-docs.mjs`; every code used
+in the backend must appear here):
+
+| Code | HTTP | Meaning |
+| --- | --- | --- |
+| `VALIDATION_ERROR` | 400 | Body/query invalid (details in `errors`). |
+| `INVALID_RESET_TOKEN` | 400 | Password-reset token invalid, used or expired. |
+| `INVALID_UPLOAD` | 400 | Upload rejected (extension/path/size or active content). |
+| `UNAUTHORIZED` | 401 | Missing/invalid auth. |
+| `INVALID_REFRESH_TOKEN` | 401 | Refresh token unknown, rotated or revoked (session dropped). |
+| `FORBIDDEN` | 403 | Authenticated but not allowed (e.g. role check). |
+| `NOT_FOUND` | 404 | Resource does not exist. |
+| `USER_ALREADY_EXISTS` | 409 | Duplicate user (email). |
+| `CONFLICT` | 409 | Generic conflict. |
+| `TOO_MANY_ATTEMPTS` | 429 | Rate limit / login blocker triggered. |
+| `MAIL_SEND_FAILED` | 500 | Outgoing email failed server-side. |
+| `INTERNAL_ERROR` | 500 | Generic server error (details only in logs). |
+
 ## Endpoints
 
 ### Health & metrics (root)
