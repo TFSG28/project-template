@@ -232,7 +232,9 @@ frontend/src/
 7. Se mexeste no servidor MCP: `cd tools/mcp-context && npm test`.
 8. `cd backend && npm run check:docs` verde — garante que rotas ou códigos de
    erro novos não ficam por documentar (substitui o "atualiza API.md" manual
-   do ponto 5 por verificação, não boa-fé).
+   do ponto 5 por verificação, não boa-fé). Corre no CI (`deploy.yml`), junto
+   com ambos os E2E no job `e2e-tests` (MySQL throwaway no runner — sem
+   secrets, sem tocar em produção); deploy não arranca sem eles.
 
 ## Nunca
 

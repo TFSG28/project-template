@@ -50,6 +50,12 @@ jobs:
         working-directory: backend
         run: npm run build
 
+      # Rotas e códigos de erro têm de estar em API.md/openapi.yaml. Falha o
+      # CI (e o deploy) se o código mudou sem atualizar a documentação.
+      - name: Docs em sincronia com o código
+        working-directory: backend
+        run: npm run check:docs
+
   quality-frontend:
     name: Frontend (lint · test · build)
     runs-on: ubuntu-latest
@@ -97,11 +103,101 @@ jobs:
         run: npm test
 
   # ---------------------------------------------------------------------------
+  # E2E — both Playwright suites against a throwaway MySQL inside the runner.
+  # A DB exists only for the job's length: no secrets, no external access, and
+  # production is never touched. CI=1 (set automatically) makes Playwright
+  # spawn its own servers with reuseExistingServer disabled.
+  # ---------------------------------------------------------------------------
+  e2e-tests:
+    name: E2E (auth · SSE · browser)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [quality-backend, quality-frontend]
+    services:
+      # throwaway DB: created on job start, deleted with the runner.
+      mysql:
+        image: mariadb:11
+        env:
+          MYSQL_ROOT_PASSWORD: e2e_throwaway_pwd
+          MYSQL_DATABASE: template_e2e
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    # Env das validations do backend (src/config/env.ts) e dos dev servers
+    # que o Playwright lança. As secrets abaixo (JWT/ENCRYPTION) são valores
+    # únicos e throwaway para e2e ONLY, não partilham nada com os ambientes
+    # reais (gerados uma vez, commitados como constantes de teste).
+    env:
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: "3306"
+      DATABASE_USER: root
+      DATABASE_PASSWORD: e2e_throwaway_pwd
+      DATABASE_NAME: template_e2e
+      # DATABASE_URL é esperado pelo schema do Prisma (CLI: db push/db-seed).
+      DATABASE_URL: mysql://root:e2e_throwaway_pwd@127.0.0.1:3306/template_e2e
+      JWT_SECRET: S2wlpNwpxfJ04eTXTXTBO0tXxQOGMnMc3Clf0S93tanBKaHuIIabAmrpUmr9lrE8d5a5cf8bf25a7d4c61e0b5844070961
+      ENCRYPTION_KEY: 4582841562d7fbcbd5abfc9aeb60a58c8248c0ca3863a56b7c17db67b754a811
+      FRONT_URL: http://localhost:4000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install dependencies (backend)
+        working-directory: backend
+        run: npm ci
+
+      - name: Install dependencies (frontend)
+        working-directory: frontend
+        run: npm ci
+
+      # Schema + utilizadores seed em base de dados vazia.
+      - name: Prepare schema & seed
+        working-directory: backend
+        run: npm run db-update && npm run db-seed
+
+      - name: Install Playwright browsers
+        working-directory: backend
+        run: npx playwright install --with-deps chromium
+
+      - name: Backend E2E (auth API · SSE stream · health)
+        working-directory: backend
+        run: npm run test:e2e
+
+      - name: Frontend E2E (login · logout · error states)
+        working-directory: frontend
+        run: npm run test:e2e
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-reports
+          path: |
+            backend/playwright-report/
+            backend/test-results/
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
   # Deploy — only on pushes to quality/production and manual dispatch.
   # ---------------------------------------------------------------------------
   set-environment:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref_name == 'quality' || github.ref_name == 'production'))
-    needs: [quality-backend, quality-frontend, quality-mcp]
+    needs: [quality-backend, quality-frontend, quality-mcp, e2e-tests]
     runs-on: ubuntu-latest
     outputs:
       env_name: ${{ steps.resolve.outputs.env_name }}
