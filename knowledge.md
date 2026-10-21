@@ -190,6 +190,14 @@ For multi-step tasks, state a brief plan:
 
 ## Testing
 
+**Test-First (TDD) — mandatory for features**
+- New features are built test-first: write the failing tests, then the
+  implementation that makes them pass. Never the opposite.
+- Every feature gets tests of every type applicable to the layer it touches:
+  unit (Vitest), integration/E2E when it touches a real flow (Playwright),
+  and component tests on the frontend (Testing Library). If a type does not
+  apply to the feature, justify it in the PR.
+
 **Test Execution**
 - Always run tests with minimal verbosity to prevent session timeouts.
 - Use `--silent` or `--quiet` flags when available.
@@ -385,6 +393,8 @@ reintroduce alternatives that were removed.
 - New pages: use the semantic classes and check `/kit` for the pattern.
 
 ### Checks before finishing
+- Features: tests written **before** the implementation (TDD) and all
+  applicable test types in place — see "Testing" above and `AGENTS.md`.
 - Backend: `npm run build` (runs prisma generate, tests, lint, tsc, copy).
 - Frontend: `npm run build` (tests + Next build) and `npm run lint`.
 - Non-trivial logic leaves one small test behind; storage/SSE/auth already have

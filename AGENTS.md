@@ -196,6 +196,12 @@ frontend/src/
 
 ## Testes
 
+- **TDD obrigatório:** numa feature nova, primeiro escrevem-se os testes
+  (que falham), depois a implementação (que os faz passar). Nunca ao contrário.
+- **Toda feature tem testes de todos os tipos aplicáveis à camada que toca:**
+  unit (Vitest), integração/E2E quando toca fluxo real (Playwright), e
+  componentes no frontend (Testing Library). Se um tipo não se aplica à
+  feature, Justifica no PR porquê.
 - Lógica não trivial deixa um teste pequeno ao lado (`*.spec.ts`/`*.spec.tsx`).
 - Backend: Vitest; `tests/setup.ts` fornece env fictícias. Não exijas DB em
   testes unitários.
@@ -206,12 +212,14 @@ frontend/src/
 
 1. `cd backend && npm run build` verde.
 2. `cd frontend && npm run build` e `npm run lint` verdes.
-3. Sem segredos, `.env`, `node_modules`, `dist`, `.next`, `src/generated`,
+3. Testes de todos os tipos aplicáveis à feature escritos **antes** da
+   implementação (TDD) e a passar; tipos não aplicáveis justificados.
+4. Sem segredos, `.env`, `node_modules`, `dist`, `.next`, `src/generated`,
    uploads/logs ou `*.tsbuildinfo` no diff.
-4. Se mudaste comportamento/contrato, atualiza `API.md`, `ARCHITECTURE.md`,
+5. Se mudaste comportamento/contrato, atualiza `API.md`, `ARCHITECTURE.md`,
    `knowledge.md` e/ou `docs/openapi.yaml`.
-5. Mudanças de env documentadas em `backend/.env.example` e `SETUP.md`.
-6. Se mexeste no servidor MCP: `cd tools/mcp-context && npm test`.
+6. Mudanças de env documentadas em `backend/.env.example` e `SETUP.md`.
+7. Se mexeste no servidor MCP: `cd tools/mcp-context && npm test`.
 
 ## Nunca
 
