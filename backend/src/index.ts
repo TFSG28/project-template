@@ -3,12 +3,18 @@ import 'dotenv/config';
 import { setupContainer } from './shared/container/container';
 import { env } from './config/env';
 import { logger } from './shared/utils/logger';
+import { initSentry } from './shared/services/sentry.service';
 import { createServer } from 'node:http';
 import { setupGracefulShutdown } from './shared/utils/graceful-shutdown';
 
 // Register DI bindings BEFORE importing app: routes resolve controllers from the
 // container at import time, so the container must be populated first.
 setupContainer();
+
+// Opt-in: só inicializa quando SENTRY_DSN está definido, antes de importar a app.
+if (initSentry()) {
+    logger.info('Sentry ativo (SENTRY_DSN definido)');
+}
 
 async function start() {
     const { default: app } = await import('./app');

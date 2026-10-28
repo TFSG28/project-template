@@ -24,6 +24,10 @@ const envSchema = z.object({
     BUSINESS_NAME: z.string().min(1).default('Perfect Template'),
 
     FRONT_URL: z.url('FRONT_URL deve ser uma URL válida'),
+
+    // Sentry (opcional). O error tracking só ativa quando o DSN está definido.
+    SENTRY_DSN: z.url('SENTRY_DSN deve ser uma URL válida').optional(),
+    SENTRY_ENVIRONMENT: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

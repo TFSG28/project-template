@@ -38,6 +38,7 @@ Este documento lista todas as melhorias implementadas no Perfect Template.
 - ✅ Database query duration tracking
 - ✅ Auditoria de auth (login, refresh, bloqueios, reset de password)
 - ✅ Diagnóstico frontend agregado (global errors → `/diagnostics/client-log`)
+- ✅ Sentry error tracking opt-in no backend (`SENTRY_DSN`; captura no `errorHandler` com correlationId)
 
 ### Benefícios
 - Monitoramento em tempo real
@@ -190,7 +191,6 @@ curl http://localhost:3001/metrics
 1. Configurar Grafana dashboards
 2. Notificações/push (opcional — requer decisão de âmbito)
 3. Adicionar mais test factories
-4. Configurar Sentry para error tracking
 
 ### Médio Prazo
 1. Implementar OpenTelemetry tracing

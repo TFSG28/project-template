@@ -156,6 +156,7 @@ Backend (`.env`):
 | `EMAIL`, `EMAIL_PASS`, `IP_SERVER`, `BUSINESS_NAME` | não | Email; sem isto a recuperação falha e fica no log |
 | `DEV_EMAIL` | não | Redireciona emails fora de produção |
 | `UPLOAD_DIR`, `LOG_DIR` | não | Defaults `<cwd>/uploads` e `<cwd>/logs/front` |
+| `SENTRY_DSN` | não | Error tracking opt-in; sem DSN o Sentry fica inativo |
 
 Frontend (`.env.development` / `.env.production`):
 

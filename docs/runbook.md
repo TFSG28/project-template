@@ -103,6 +103,14 @@ Formato de log:
 }
 ```
 
+### Error tracking (Sentry)
+
+Opt-in via `SENTRY_DSN` no `.env` do backend. Ativo, o backend reporta os
+erros não esperados (o caminho 500 do `errorHandler`) com `correlationId`,
+`http.method` e `http.url` em tags; sem DSN, tudo continua a passar só pelos
+logs Pino. Fechar a sessão no graful shutdown não precisa de flush manual —
+o SDK sincroniza no exit do processo.
+
 ### Auth operations
 
 #### Reset a user's password (operator)

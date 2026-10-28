@@ -174,6 +174,8 @@ npm start
 | `UPLOAD_DIR` | no | Default `<cwd>/uploads` |
 | `LOG_DIR` | no | Default `<cwd>/logs/front` |
 | `PASSWORD_SALT_ROUNDS` | no | bcrypt cost, default `12` |
+| `SENTRY_DSN` | no | Opt-in error tracking; unset disables Sentry |
+| `SENTRY_ENVIRONMENT` | no | Overrides the environment name reported to Sentry |
 
 ### Frontend (`.env.development` / `.env.production`)
 
